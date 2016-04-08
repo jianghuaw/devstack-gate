@@ -465,6 +465,12 @@ function setup_localrc {
 
         # Set multi-host config
         localrc_set "$localrc_file" "MULTI_HOST" "1"
+
+        # neutron network will set FLAT_NETWORK_BRIDGE in pre_test_hook
+        if [[ $DEVSTACK_GATE_NEUTRON -ne "1" ]]; then
+            # A separate xapi network is created with this name-label
+            localrc_set "$localrc_file" FLAT_NETWORK_BRIDGE vmnet
+        fi
     fi
 
     if [[ "$DEVSTACK_GATE_TEMPEST" -eq "1" ]]; then
