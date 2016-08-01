@@ -97,13 +97,17 @@ function setup_nova_net_networking {
     # issue with nova net configuring br100 to take over eth0
     # by default.
     # TODO (clarkb): figure out how to make bridge setup sane with ansible.
-    ovs_vxlan_bridge "br_pub" $primary_node "True" 1 \
-                    $FLOATING_HOST_PREFIX $FLOATING_HOST_MASK \
-                    $sub_nodes
-    ovs_vxlan_bridge "br_flat" $primary_node "False" 128 \
-                    $sub_nodes
-    localrc_set $localrc "FLAT_INTERFACE" "br_flat"
-    localrc_set $localrc "PUBLIC_INTERFACE" "br_pub"
+    if [[ "$DEVSTACK_GATE_VIRT_DRIVER" != "xenapi" ]]; then
+        # The following work around shouldn't be applied on xenapi, as xenserver
+        # has vmnet connected on eth3.
+        ovs_vxlan_bridge "br_pub" $primary_node "True" 1 \
+                        $FLOATING_HOST_PREFIX $FLOATING_HOST_MASK \
+                        $sub_nodes
+        ovs_vxlan_bridge "br_flat" $primary_node "False" 128 \
+                        $sub_nodes
+        localrc_set $localrc "FLAT_INTERFACE" "br_flat"
+        localrc_set $localrc "PUBLIC_INTERFACE" "br_pub"
+    fi
 }
 
 function setup_multinode_connectivity {
@@ -464,7 +468,7 @@ function setup_localrc {
         localrc_set "$localrc_file" "VOLUME_BACKING_DEVICE" "/dev/xvdb"
 
         # Set multi-host config
-        localrc_set "$localrc_file" "MULTI_HOST" "1"
+        localrc_set "$localrc_file" "MULTI_HOST" "False"
 
         # neutron network will set FLAT_NETWORK_BRIDGE in pre_test_hook
         if [[ $DEVSTACK_GATE_NEUTRON -ne "1" ]]; then
