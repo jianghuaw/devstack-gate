@@ -370,7 +370,7 @@ function fix_disk_layout {
             # Don't use sparse device to avoid wedging when disk space and
             # memory are both unavailable.
             local swapfile='/root/swapfile'
-            sudo touch ${swapfile}
+            #sudo touch ${swapfile}
             swapdiff=$(( $SWAPSIZE - $swapcurrent ))
 
             if sudo df -T ${swapfile} | grep -q ext ; then
